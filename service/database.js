@@ -1,5 +1,5 @@
 /**
- * PostgresSQL custom module.
+ * PostgresSQL module wrapper.
  * @module service/database
  */
 const pg = require('pg');
