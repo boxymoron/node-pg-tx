@@ -1,0 +1,19 @@
+<% include header.html %>
+
+	<div class=”container”>
+		<h2 class=”text-center”>This is testing database transactions.</h2>
+		
+		<h2>The output is:</h2>
+		<pre> <%=body%></pre>
+		
+		<h2>Transaction statistics:</h2>
+		<pre> <%=JSON.stringify(ctx.transaction, null, '\t')%></pre>
+		
+		<h2>And this is the code:</h2>
+		<div class=”col-xs-12col-md-4">
+			<pre>
+<% include ../routes/fib.js %>
+		    </pre>
+		</div>
+	</div>
+<% include footer.html %>

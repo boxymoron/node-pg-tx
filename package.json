@@ -1,0 +1,22 @@
+{
+  "name": "node_express",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "4.13.4",
+    "serve-favicon": "*",
+    "body-parser": "*",
+    "method-override": "*",
+    "errorhandler": "*",
+    "jade": "*",
+    "ejs": "*",
+    "libxmljs": "*",
+    "cheerio": "*",
+    "uuid": "*",
+    "morgan": "*",
+    "pg": "*"
+  }
+}

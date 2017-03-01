@@ -1,0 +1,33 @@
+<% include header.html %>
+    
+    <h1>Welcome, the test can be found <a href="/rest/fib">here</a></h1>
+    <style>
+    	.col-lg-3:nth-child(4n+1){
+		    clear: left;
+		}
+
+    </style>
+    <div class="container">
+	    <div class="row">
+		    <%for(var i=0; i<entries.length; i++){%>
+				
+					<div class="col" style="padding: 10px;">
+			    		<%=entries[i].pubDate.toLocaleString()%><br>
+			    		<a href="<%=entries[i].link%>"><%=entries[i].title%></a><br>
+			    		<img src="<%=entries[i].image%>" style="width:300px;height: 200px;"/>
+					</div>
+					
+				<%if((i % 3 +1)=== 0){%>
+					</div><div class="row">
+				<%}%>
+		    <%}%>
+	   	</div>
+	   	<h2>And this is the code:</h2>
+		<div class=”col-xs-12col-md-4">
+			<pre>
+<% include ../routes/index.js %>
+		    </pre>
+		</div>
+	</div>
+	
+<% include footer.html %>
