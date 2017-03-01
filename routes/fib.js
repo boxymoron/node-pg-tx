@@ -10,7 +10,9 @@ exports.get = function(req, res){
 
 };
 
-//This is new code usinf Promises
+/**
+ * Runs two SQL statements in a single transaction.
+ */
 const process = function (UUID, res){	
 
 	var runQuery = (ctx) => {
