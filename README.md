@@ -24,7 +24,7 @@ Example:
 
 The interesting bits are in: [service/database.js](https://github.com/boxymoron/node-pg-tx/blob/master/service/database.js "database.js")   and [routes/fib.js](https://github.com/boxymoron/node-pg-tx/blob/master/routes/fib.js "fib.js").
 
-Before running, initialize the db with the DDL below set the connection parameters to your database in [service/database.js](https://github.com/boxymoron/node-pg-tx/blob/master/service/database.js "database.js"):
+Before running, initialize the db with the DDL below and set the connection parameters to your database in [service/database.js](https://github.com/boxymoron/node-pg-tx/blob/master/service/database.js "database.js"):
 <pre>
 CREATE TABLE public.node_test
 (
