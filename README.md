@@ -1,11 +1,30 @@
 # node-pg-tx
-NodeJS PostgresSQL Transaction examples
+NodeJS PostgresSQL Transaction wrapper.
 
-This is a wrapper around the pg module to make a bit easier to re-use a transaction across multiple SQL statements.
+This is a thin wrapper around the [pg](https://github.com/brianc/node-postgres "pg")  module to make it easier to execute multiple SQL statements in a single transaction. It also lets you set the transaction isolation level and makes committing and rolling back easier.
 
-The interesting bits are in: `routes/fib.js`  and `service/database.js`
+Example:
+<pre>
+	db.connect().then((ctx) =>{
+		return db.beginTransaction(ctx, db.READ_COMMITTED);
+	}).then((ctx) =>{
+		return runQuery(ctx);
+	}).then((ctx) => {
+		return runUpsert(ctx);
+	}).then((ctx) =>{
+		return db.commit(ctx);
+	}).then((ctx) =>{
+		return sendResponse(ctx);
+	}).catch((ctx) =>{
+		console.log(ctx.err);
+		db.rollback(ctx);
+		res.status(500).send('error: '+ctx.err);
+	});
+</pre>
 
-Before running, initialize the db with the DDL below set the connection parameters to your database in `service/database.js`:
+The interesting bits are in: [service/database.js](https://github.com/boxymoron/node-pg-tx/blob/master/service/database.js "database.js")   and [routes/fib.js](https://github.com/boxymoron/node-pg-tx/blob/master/routes/fib.js "fib.js").
+
+Before running, initialize the db with the DDL below set the connection parameters to your database in [service/database.js](https://github.com/boxymoron/node-pg-tx/blob/master/service/database.js "database.js"):
 <pre>
 CREATE TABLE public.node_test
 (
