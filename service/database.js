@@ -12,7 +12,7 @@ const db_config = {
 	host: 'localhost', // Server hosting the postgres database
 	port: 5432, //env var: PGPORT
 	max: 10, // max number of clients in the POOL
-	idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
+	idleTimeoutMillis: 300000, // how long a client is allowed to remain idle before being closed
 };
 
 const POOL = new pg.Pool(db_config);
@@ -39,7 +39,7 @@ var Transaction = function(isolationLevel, transactionID){
     this.status = "Started";
     this.committed = null;
     this.transactionIsolation = isolationLevel;
-}
+};
 
 Transaction.prototype.setCommitted = function(){
 	this.status = "Committed";
@@ -47,15 +47,15 @@ Transaction.prototype.setCommitted = function(){
 	this.statistics = {
 		processingTime : (this.committed.getTime() - this.started.getTime())
 	};
-}
+};
 
 Transaction.prototype.setStatus = function(status){
 	this.status = status;
-}
+};
 
 Transaction.prototype.toString = function(){
 	return JSON.stringify(this);
-}
+};
 
 exports.Context = Context;
 var Context = function(client, done) {
@@ -63,11 +63,11 @@ var Context = function(client, done) {
     this.done = done;
     this.transaction = null;
     this.err = null;
-}
+};
 
 Context.prototype.setTransaction = function(isolationLevel, transactionID){
 	this.transaction = new Transaction(isolationLevel === null ? READ_COMMITTED : isolationLevel, transactionID);
-}
+};
 
 /**
  * 
@@ -84,7 +84,7 @@ exports.connect = function(){
 	});
 };
 
-const VALID_TX_ISOLATION_LEVELS = new RegExp("/SERIALIZABLE|REPEATABLE READ|READ COMMITTED|READ UNCOMMITTED|READ WRITE|READ ONLY/");
+const VALID_TX_ISOLATION_LEVELS = new RegExp("/^SERIALIZABLE|REPEATABLE READ|READ COMMITTED|READ UNCOMMITTED|READ WRITE|READ ONLY$/");
 exports.beginTransaction = (ctx, isolationLevel) => {
 	if(!isolationLevel.match(VALID_TX_ISOLATION_LEVELS)){
 		ctx.err = new Error("Invalid transaction isolation level. Expected: "+VALID_TX_ISOLATION_LEVELS);
@@ -110,7 +110,8 @@ exports.beginTransaction = (ctx, isolationLevel) => {
 					console.log("Started new transaction: "+ctx.transaction);
 					return resolve(ctx);
 				}else{
-					return reject(new Error("Transaction is in unknown state: "+ctx.transaction));
+					ctx.err = new Error("Transaction is in unknown state: "+ctx.transaction);
+					return reject(ctx);
 				}
 			});
 		});
@@ -118,17 +119,28 @@ exports.beginTransaction = (ctx, isolationLevel) => {
 };
 
 exports.rollback = function(ctx) {
-	if(ctx.transaction){
-		console.log("Rolling back transaction: "+ctx.transaction);
-		ctx.client.query('ROLLBACK', function(err) {
-			//if there was a problem rolling back the query
-			//something is seriously messed up.  Return the error
-			//to the done function to close & remove this client from
-			//the POOL.  If you leave a client in the POOL with an unaborted
-			//transaction weird, hard to diagnose problems might happen.
-			return ctx.done(err);
-		});
-	}
+	return new Promise(function(resolve, reject){
+		if(ctx.transaction){
+			console.log("Rolling back transaction: "+ctx.transaction);
+			ctx.client.query('ROLLBACK', function(err, result) {
+				if(err){
+					//if there was a problem rolling back the query
+					//something is seriously messed up.  Return the error
+					//to the done function to close & remove this client from
+					//the POOL.  If you leave a client in the POOL with an unaborted
+					//transaction weird, hard to diagnose problems might happen.
+					ctx.err = err;
+					ctx.done(err);
+					return reject(ctx);
+				}else{
+					ctx.transaction.setStatus("Rolled-back");
+				}
+			});
+		}else{
+			console.log("No transaction, nothing to roll-back.");
+		}
+		return resolve(ctx);
+	});
 };
 
 exports.commit = function(ctx){
