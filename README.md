@@ -16,9 +16,10 @@ Example:
 	}).then((ctx) =>{
 		return sendResponse(ctx);
 	}).catch((ctx) =>{
+		var err = ctx.err;
 		console.log(ctx.err);
 		db.rollback(ctx);
-		res.status(500).send('error: '+ctx.err);
+		res.status(500).send('error: '+err);
 	});
 </pre>
 
